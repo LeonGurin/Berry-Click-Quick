@@ -3,6 +3,8 @@ import random
 
 pygame.init()
 
+# comment
+
 from pygame.locals import (
     K_UP,
     K_DOWN,
