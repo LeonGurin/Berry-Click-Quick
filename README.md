@@ -2,3 +2,6 @@
 The first repository for testing github
 
 Right now I'm testing my skills and making a game with minimal experience
+
+and
+with my friend github copilot that carries me
