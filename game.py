@@ -1,9 +1,12 @@
 import pygame
 import random
+import os
+import sys
+import time
 
 pygame.init()
 
-# comment
+# fixed python 32-bit bug 
 
 from pygame.locals import (
     K_UP,
@@ -22,8 +25,9 @@ SCREEN_HEIGHT = 500
 #set game tic rate
 FPS = 30
 
+
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pic = pygame.image.load("background.jpg")
+pic = pygame.image.load(os.path.dirname(__file__) + "\\background.jpg").convert()
 
 pygame.display.set_caption('Clicky Bicky Game')
 clock = pygame.time.Clock()
@@ -38,7 +42,7 @@ textRect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 200)
 class Fruit(pygame.sprite.Sprite):
     def __init__(self):
         super(Fruit, self).__init__()
-        self.surf = pygame.image.load("Strawberry.png").convert()
+        self.surf = pygame.image.load(os.path.dirname(__file__) + "\\Strawberry.png").convert()
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         # self.surf.fill((255, 255, 255))
         self.rect = self.surf.get_rect()
