@@ -17,7 +17,7 @@ pygame.init()
 # fixed python 32-bit bug ✔
 # add start screen ✔
 # fix berry bug ❌
-# add score bar and timer 🤷‍♂️
+# add score bar and timer ✔
 # add sound
 # add game over
 # add high score
@@ -55,7 +55,7 @@ class Background(pygame.sprite.Sprite):
 
 # create a start button
 class StartButton(pygame.sprite.Sprite):
-    def __init__(self) -> None:
+    def __init__(self):
         super(StartButton, self).__init__()
         self.image = pygame.image.load(os.path.dirname(__file__) + "\\start.png").convert()
         self.image.set_colorkey((255, 255, 255), RLEACCEL)
@@ -85,7 +85,7 @@ class Title:
 class UI(pygame.sprite.Sprite):
     def __init__(self):
         super(UI, self).__init__()
-        self.surf = pygame.image.load(os.path.dirname(__file__) + "\\uiBar2.png").convert_alpha()
+        self.surf = pygame.image.load(os.path.dirname(__file__) + "\\uiBar4.png").convert_alpha()
         self.surf = pygame.transform.scale(self.surf, (SCREEN_WIDTH+36, 600))
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect()
@@ -96,14 +96,15 @@ class UI(pygame.sprite.Sprite):
 
 class ClockText:
     def __init__(self):
-        self.font = pygame.font.Font(None, 50)
+        self.font = pygame.font.Font(os.path.dirname(__file__) + "\\Quinquefive.ttf", 34)
         self.current_time = time.time()
         self.s = 0
         self.m = 0
-        self.text = self.font.render("0:00", True, (255, 255, 255))
+        self.color = (3, 169, 244)
+        self.text = self.font.render("0:00", True, self.color)
         # self.text = self.font.render(str(self.m) + ':' + str(self.s), True, (255, 255, 255))
         self.rect = self.text.get_rect()
-        self.rect.center = (SCREEN_WIDTH//2, SCREEN_HEIGHT // 2 - 200)
+        self.rect.center = (SCREEN_WIDTH//2, SCREEN_HEIGHT // 2 - 195)
     def update(self):
         if time.time() - self.current_time >= 1:
             self.current_time = time.time()
@@ -111,13 +112,13 @@ class ClockText:
             if self.s == 60:
                 self.s = 0
                 self.m += 1
-        self.text = self.font.render(str(self.m) + ':' + str(self.s), True, (255, 255, 255))
+        self.text = self.font.render(str(self.m) + ':' + str(self.s), True, self.color)
     
     def render(self):
         if self.s < 10:
-            self.text = self.font.render(str(self.m) + ':0' + str(self.s), True, (255, 255, 255))
+            self.text = self.font.render(str(self.m) + ':0' + str(self.s), True, self.color)
         else:
-            self.text = self.font.render(str(self.m) + ':' + str(self.s), True, (255, 255, 255))
+            self.text = self.font.render(str(self.m) + ':' + str(self.s), True, self.color)
         screen.blit(self.text, self.rect)
 
 # fruit object
@@ -125,13 +126,14 @@ class Fruit(pygame.sprite.Sprite):
     def __init__(self):
         super(Fruit, self).__init__()
         self.surf = pygame.image.load(os.path.dirname(__file__) + "\\Strawberry.png").convert_alpha()
+        self.surf = pygame.transform.scale(self.surf, (100, 100))
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
-        # self.surf.fill((255, 255, 255))
         self.rect = self.surf.get_rect()
         self.posX = SCREEN_WIDTH / 2 - self.rect.width / 2
         self.posY = SCREEN_HEIGHT / 2 - self.rect.height / 2
         self.tempX = self.posX
         self.tempY = self.posY
+        self.transform_factor = 50
     def is_clicked(self,x,y):
         if x > self.posX and x < self.posX + self.rect.width:
             if y > self.posY and y < self.posY + self.rect.height:
@@ -141,8 +143,32 @@ class Fruit(pygame.sprite.Sprite):
                     self.tempY = random.randint(100, SCREEN_HEIGHT - self.rect.height)
                 self.posX = self.tempX
                 self.posY = self.tempY
+                return True
+        return False
+    def update(self, counter):
+        if counter % 5 == 1:
+            if self.transform_factor >= 50:
+                self.transform_factor -= 5
+                self.surf = pygame.transform.scale(self.surf, (self.transform_factor, self.transform_factor))
     def render(self):
         screen.blit(self.surf, (self.posX, self.posY))
+
+class Score:
+    def __init__(self):
+        self.font = pygame.font.Font(os.path.dirname(__file__) + "\\Quinquefive.ttf", 34)
+        self.cur_time = time.time()
+        self.color = (0, 0, 0)
+        self.text = self.font.render("0", True, self.color)
+        self.counter = 0
+        self.rect = self.text.get_rect()
+        self.rect.center = (SCREEN_WIDTH//2 - 121, SCREEN_HEIGHT // 2 - 195)
+    def update(self):
+        if time.time() - self.cur_time >= 1:
+            self.cur_time = time.time()
+            self.counter += 1
+    def render(self):
+        self.text = self.font.render(str(self.counter), True, self.color)
+        screen.blit(self.text, self.rect)
 
 #-------------------#
 #  code starts here
@@ -151,6 +177,7 @@ class Fruit(pygame.sprite.Sprite):
 # init objects
 bg = Background()
 st = StartButton()
+tt = Title()
 
 (x,y) = pygame.mouse.get_pos()
 # start menu
@@ -176,9 +203,9 @@ while st.is_clicked(x,y) == False:
 time.sleep(.1)
 # game loop
 fr = Fruit()
-tt = Title()
 cl = ClockText()
 ui = UI()
+sc = Score()
 
 running = True
 while running:    
@@ -191,16 +218,19 @@ while running:
 
     #if the mouse is clicked
     if event.type == MOUSEBUTTONDOWN:
+        print(time.time())
         (x,y) = pygame.mouse.get_pos()
-        fr.is_clicked(x,y)
-    
+        if fr.is_clicked(x,y) == True:
+            sc.update()
+        
     bg.update()
     bg.render()
+    fr.update(sc.counter)
     fr.render()
-    # tt.render()
     ui.render()
     cl.update()
     cl.render()
+    sc.render()
     pygame.display.update()
     clock.tick(FPS)
     
