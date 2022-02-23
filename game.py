@@ -17,7 +17,7 @@ pygame.init()
 # fixed python 32-bit bug ✔
 # add start screen ✔
 # fix berry bug ❌
-# add score bar and timer
+# add score bar and timer 🤷‍♂️
 # add sound
 # add game over
 # add high score
@@ -73,11 +73,40 @@ class StartButton(pygame.sprite.Sprite):
         # render the button at the center of the screen
         screen.blit(self.image, (self.posX, self.posY))
 
-# init text
-font = pygame.font.Font('freesansbold.ttf', 32)
-text = font.render('Clicky Bicky Game', True, (0,255,0), (0,0,255))
-textRect = text.get_rect()
-textRect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 200)
+class Title:
+    def __init__(self):
+        self.font = pygame.font.Font('freesansbold.ttf', 35)
+        self.text = self.font.render('Clicky Bicky Game', True, (0,255,0), (0,0,255))
+        self.rect = self.text.get_rect()
+        self.rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 200)
+    def render(self):
+        screen.blit(self.text, self.rect)
+
+class ClockText:
+    def __init__(self):
+        self.font = pygame.font.Font(None, 50)
+        self.current_time = time.time()
+        self.s = 0
+        self.m = 0
+        self.text = self.font.render("0:00", True, (255, 255, 255))
+        # self.text = self.font.render(str(self.m) + ':' + str(self.s), True, (255, 255, 255))
+        self.rect = self.text.get_rect()
+        self.rect.center = (45, SCREEN_HEIGHT // 2 - 200)
+    def update(self):
+        if time.time() - self.current_time >= 1:
+            self.current_time = time.time()
+            self.s += 1
+            if self.s == 60:
+                self.s = 0
+                self.m += 1
+        self.text = self.font.render(str(self.m) + ':' + str(self.s), True, (255, 255, 255))
+    
+    def render(self):
+        if self.s < 10:
+            self.text = self.font.render(str(self.m) + ':0' + str(self.s), True, (255, 255, 255))
+        else:
+            self.text = self.font.render(str(self.m) + ':' + str(self.s), True, (255, 255, 255))
+        screen.blit(self.text, self.rect)
 
 # fruit object
 class Fruit(pygame.sprite.Sprite):
@@ -135,6 +164,8 @@ while st.is_clicked(x,y) == False:
 time.sleep(.1)
 # game loop
 fr = Fruit()
+tt = Title()
+cl = ClockText()
 running = True
 while running:    
     for event in pygame.event.get():
@@ -152,7 +183,9 @@ while running:
     bg.update()
     bg.render()
     fr.render()
-    screen.blit(text, textRect)
+    tt.render()
+    cl.update()
+    cl.render()
     pygame.display.update()
     clock.tick(FPS)
     
