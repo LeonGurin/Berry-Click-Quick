@@ -82,6 +82,18 @@ class Title:
     def render(self):
         screen.blit(self.text, self.rect)
 
+class UI(pygame.sprite.Sprite):
+    def __init__(self):
+        super(UI, self).__init__()
+        self.surf = pygame.image.load(os.path.dirname(__file__) + "\\uiBar2.png").convert_alpha()
+        self.surf = pygame.transform.scale(self.surf, (SCREEN_WIDTH+36, 600))
+        self.surf.set_colorkey((255, 255, 255), RLEACCEL)
+        self.rect = self.surf.get_rect()
+        #self.rect.center = (SCREEN_WIDTH // 2, 222)
+
+    def render(self):
+        screen.blit(self.surf, (-15, 0))
+
 class ClockText:
     def __init__(self):
         self.font = pygame.font.Font(None, 50)
@@ -91,7 +103,7 @@ class ClockText:
         self.text = self.font.render("0:00", True, (255, 255, 255))
         # self.text = self.font.render(str(self.m) + ':' + str(self.s), True, (255, 255, 255))
         self.rect = self.text.get_rect()
-        self.rect.center = (45, SCREEN_HEIGHT // 2 - 200)
+        self.rect.center = (SCREEN_WIDTH//2, SCREEN_HEIGHT // 2 - 200)
     def update(self):
         if time.time() - self.current_time >= 1:
             self.current_time = time.time()
@@ -166,6 +178,8 @@ time.sleep(.1)
 fr = Fruit()
 tt = Title()
 cl = ClockText()
+ui = UI()
+
 running = True
 while running:    
     for event in pygame.event.get():
@@ -183,7 +197,8 @@ while running:
     bg.update()
     bg.render()
     fr.render()
-    tt.render()
+    # tt.render()
+    ui.render()
     cl.update()
     cl.render()
     pygame.display.update()
