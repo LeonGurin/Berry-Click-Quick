@@ -16,7 +16,7 @@ pygame.init()
 
 # fixed python 32-bit bug ✔
 # add start screen ✔
-# fix berry bug ❌
+# fix berry bug ✔
 # add score bar and timer ✔
 # add sound
 # add game over
