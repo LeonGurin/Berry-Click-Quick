@@ -85,7 +85,7 @@ class Title:
 class UI(pygame.sprite.Sprite):
     def __init__(self):
         super(UI, self).__init__()
-        self.surf = pygame.image.load(os.path.dirname(__file__) + "\\uiBar4.png").convert_alpha()
+        self.surf = pygame.image.load(os.path.dirname(__file__) + "\\uiBar5.png").convert_alpha()
         self.surf = pygame.transform.scale(self.surf, (SCREEN_WIDTH+36, 600))
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect()
@@ -125,31 +125,35 @@ class ClockText:
 class Fruit(pygame.sprite.Sprite):
     def __init__(self):
         super(Fruit, self).__init__()
+        self.transform_factor = 110
         self.surf = pygame.image.load(os.path.dirname(__file__) + "\\Strawberry.png").convert_alpha()
-        self.surf = pygame.transform.scale(self.surf, (100, 100))
+        self.surf = pygame.transform.scale(self.surf, (self.transform_factor, self.transform_factor))
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect()
         self.posX = SCREEN_WIDTH / 2 - self.rect.width / 2
         self.posY = SCREEN_HEIGHT / 2 - self.rect.height / 2
         self.tempX = self.posX
         self.tempY = self.posY
-        self.transform_factor = 50
+        self.click_status = False
     def is_clicked(self,x,y):
-        if x > self.posX and x < self.posX + self.rect.width:
-            if y > self.posY and y < self.posY + self.rect.height:
-                # self.surf.fill((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
+        if self.posX < x < self.posX + self.rect.width:
+            if self.posY < y < self.posY + self.rect.height:
+                self.click_status = True
                 while self.tempX >= self.posX and self.tempX <= self.posX + self.rect.width:
                     self.tempX = random.randint(0, SCREEN_WIDTH - self.rect.width)
                     self.tempY = random.randint(100, SCREEN_HEIGHT - self.rect.height)
                 self.posX = self.tempX
                 self.posY = self.tempY
                 return True
+            else:
+                if self.click_status == True:
+                    self.click_status = False
         return False
-    def update(self, counter):
-        if counter % 5 == 1:
-            if self.transform_factor >= 50:
-                self.transform_factor -= 5
-                self.surf = pygame.transform.scale(self.surf, (self.transform_factor, self.transform_factor))
+
+    def update(self):
+        if self.transform_factor >= 50:
+            self.transform_factor -= 10
+            self.surf = pygame.transform.scale(self.surf, (self.transform_factor, self.transform_factor))
     def render(self):
         screen.blit(self.surf, (self.posX, self.posY))
 
@@ -163,8 +167,9 @@ class Score:
         self.rect = self.text.get_rect()
         self.rect.center = (SCREEN_WIDTH//2 - 121, SCREEN_HEIGHT // 2 - 195)
     def update(self):
-        if time.time() - self.cur_time >= 1:
-            self.cur_time = time.time()
+        if self.counter == 5:
+            self.counter = 0
+        else:
             self.counter += 1
     def render(self):
         self.text = self.font.render(str(self.counter), True, self.color)
@@ -218,14 +223,16 @@ while running:
 
     #if the mouse is clicked
     if event.type == MOUSEBUTTONDOWN:
-        print(time.time())
         (x,y) = pygame.mouse.get_pos()
         if fr.is_clicked(x,y) == True:
             sc.update()
-        
+            if sc.counter == 0:
+                print(fr.transform_factor)
+                fr.update()
+                print(fr.transform_factor)
+    print(fr.transform_factor)
     bg.update()
     bg.render()
-    fr.update(sc.counter)
     fr.render()
     ui.render()
     cl.update()
