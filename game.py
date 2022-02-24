@@ -36,7 +36,7 @@ clock = pygame.time.Clock()
 class Background(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load(os.path.dirname(__file__) + "\\sky3.jpg").convert()
+        self.image = pygame.image.load(os.path.dirname(__file__) + "\\bgSky.png").convert()
         self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH, SCREEN_HEIGHT))
         self.rect = self.image.get_rect()
         self.x = 0
@@ -57,9 +57,9 @@ class Background(pygame.sprite.Sprite):
 class StartButton(pygame.sprite.Sprite):
     def __init__(self):
         super(StartButton, self).__init__()
-        self.image = pygame.image.load(os.path.dirname(__file__) + "\\start.png").convert()
+        self.image = pygame.image.load(os.path.dirname(__file__) + "\\gameT.png").convert_alpha()
         self.image.set_colorkey((255, 255, 255), RLEACCEL)
-        self.image = pygame.transform.scale(self.image, (200, 100))
+        self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH, 500))
         self.rect = self.image.get_rect()
         self.posX = SCREEN_WIDTH / 2 - self.rect.width / 2
         self.posY = SCREEN_HEIGHT / 2 - self.rect.height / 2
@@ -184,9 +184,14 @@ bg = Background()
 st = StartButton()
 tt = Title()
 
+startGame = False
+
+#delay
+pygame.time.delay(100)
+
 (x,y) = pygame.mouse.get_pos()
 # start menu
-while st.is_clicked(x,y) == False:
+while startGame == False:
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
@@ -197,7 +202,7 @@ while st.is_clicked(x,y) == False:
                 sys.exit()
     if event.type == MOUSEBUTTONDOWN:
         (x,y) = pygame.mouse.get_pos()
-        st.is_clicked(x,y)
+        startGame = st.is_clicked(x,y)
     bg.render()
     bg.update()
     st.render()
