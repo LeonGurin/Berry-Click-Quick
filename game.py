@@ -1,3 +1,4 @@
+from ast import While
 import pygame
 import random
 import os
@@ -57,30 +58,33 @@ class Background(pygame.sprite.Sprite):
 class StartButton(pygame.sprite.Sprite):
     def __init__(self):
         super(StartButton, self).__init__()
-        self.image = pygame.image.load(os.path.dirname(__file__) + "\\gameT.png").convert_alpha()
+        self.image = pygame.image.load(os.path.dirname(__file__) + "\\StartButton.png").convert_alpha()
         self.image.set_colorkey((255, 255, 255), RLEACCEL)
-        self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH, 500))
+        self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        # self.image = pygame.Surface((100, 100))
         self.rect = self.image.get_rect()
         self.posX = SCREEN_WIDTH / 2 - self.rect.width / 2
-        self.posY = SCREEN_HEIGHT / 2 - self.rect.height / 2
+        self.posY = SCREEN_HEIGHT / 2 - self.rect.height / 2 + 120
     def is_clicked(self,x,y):
         if x > self.posX and x < self.posX + self.rect.width:
             if y > self.posY and y < self.posY + self.rect.height:
-                # self.surf.fill((random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
                 return True
         return False
     def render(self):
-        # render the button at the center of the screen
         screen.blit(self.image, (self.posX, self.posY))
 
-class Title:
+class Title(pygame.sprite.Sprite):
     def __init__(self):
-        self.font = pygame.font.Font('freesansbold.ttf', 35)
-        self.text = self.font.render('Clicky Bicky Game', True, (0,255,0), (0,0,255))
-        self.rect = self.text.get_rect()
-        self.rect.center = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 200)
+        super(Title, self).__init__()
+        self.image = pygame.image.load(os.path.dirname(__file__) + "\\gameT.png").convert_alpha()
+        self.image.set_colorkey((255, 255, 255), RLEACCEL)
+        self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.rect = self.image.get_rect()
+        self.posX = SCREEN_WIDTH / 2 - self.rect.width / 2
+        self.posY = SCREEN_HEIGHT / 2 - self.rect.height / 2 - 50
+        self.rect = self.image.get_rect()
     def render(self):
-        screen.blit(self.text, self.rect)
+        screen.blit(self.image, self.rect)
 
 class UI(pygame.sprite.Sprite):
     def __init__(self):
@@ -126,36 +130,71 @@ class Fruit(pygame.sprite.Sprite):
     def __init__(self):
         super(Fruit, self).__init__()
         self.transform_factor = 110
-        self.surf = pygame.image.load(os.path.dirname(__file__) + "\\Strawberry.png").convert_alpha()
-        self.surf = pygame.transform.scale(self.surf, (self.transform_factor, self.transform_factor))
-        self.surf.set_colorkey((255, 255, 255), RLEACCEL)
-        self.rect = self.surf.get_rect()
+        self.sprites = []
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\pixil-frame-0.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\pixil-frame-1.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\pixil-frame-2.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\pixil-frame-3.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\pixil-frame-4.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\pixil-frame-5.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\pixil-frame-6.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\pixil-frame-7.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\pixil-frame-8.png").convert_alpha())
+        self.current_sprite = 0
+        self.image = self.sprites[self.current_sprite]
+        self.image = pygame.transform.scale(self.image, (self.transform_factor, self.transform_factor))
+        self.rect = self.image.get_rect()
         self.posX = SCREEN_WIDTH / 2 - self.rect.width / 2
         self.posY = SCREEN_HEIGHT / 2 - self.rect.height / 2
         self.tempX = self.posX
         self.tempY = self.posY
         self.click_status = False
+        self.is_animating = False
     def is_clicked(self,x,y):
         if self.posX < x < self.posX + self.rect.width:
             if self.posY < y < self.posY + self.rect.height:
                 self.click_status = True
-                while self.tempX >= self.posX and self.tempX <= self.posX + self.rect.width:
-                    self.tempX = random.randint(0, SCREEN_WIDTH - self.rect.width)
-                    self.tempY = random.randint(100, SCREEN_HEIGHT - self.rect.height)
-                self.posX = self.tempX
-                self.posY = self.tempY
-                return True
+                self.animate()
             else:
                 if self.click_status == True:
                     self.click_status = False
-        return False
+    
+    def change_pos(self):
+        while self.tempX >= self.posX and self.tempX <= self.posX + self.rect.width:
+            self.tempX = random.randint(0, SCREEN_WIDTH - self.rect.width)
+            self.tempY = random.randint(150, SCREEN_HEIGHT - self.rect.height)
+        self.posX = self.tempX
+        self.posY = self.tempY
+
+    def animate(self):
+        self.is_animating = True 
 
     def update(self):
+        if self.is_animating:
+            self.current_sprite += 0.5
+            
+            if self.current_sprite == len(self.sprites):
+                self.current_sprite = 0
+                self.is_animating = False
+                self.change_pos()
+                self.image = self.sprites[int(self.current_sprite)]
+                self.image = pygame.transform.scale(self.image, (self.transform_factor, self.transform_factor))
+                self.rect = self.image.get_rect()
+                return True
+            
+            self.image = self.sprites[int(self.current_sprite)]
+            self.image = pygame.transform.scale(self.image, (self.transform_factor, self.transform_factor))
+            self.rect = self.image.get_rect()
+        return False
+
+    def scale(self):
         if self.transform_factor >= 50:
             self.transform_factor -= 10
-            self.surf = pygame.transform.scale(self.surf, (self.transform_factor, self.transform_factor))
+            self.image = pygame.transform.scale(self.image, (self.transform_factor, self.transform_factor))
+            self.rect = self.image.get_rect()
+
     def render(self):
-        screen.blit(self.surf, (self.posX, self.posY))
+        screen.blit(self.image, (self.posX, self.posY))
 
 class Score:
     def __init__(self):
@@ -205,6 +244,7 @@ while startGame == False:
         startGame = st.is_clicked(x,y)
     bg.render()
     bg.update()
+    tt.render()
     st.render()
     pygame.display.update()
     clock.tick(FPS)
@@ -229,19 +269,22 @@ while running:
     #if the mouse is clicked
     if event.type == MOUSEBUTTONDOWN:
         (x,y) = pygame.mouse.get_pos()
-        if fr.is_clicked(x,y) == True:
-            sc.update()
-            if sc.counter == 0:
-                print(fr.transform_factor)
-                fr.update()
-                print(fr.transform_factor)
+        fr.is_clicked(x,y)
+
     print(fr.transform_factor)
     bg.update()
     bg.render()
+
+    if fr.update() == True:
+        sc.update()
+        if sc.counter == 0:
+            fr.scale()    
     fr.render()
+    
     ui.render()
     cl.update()
     cl.render()
+    
     sc.render()
     pygame.display.update()
     clock.tick(FPS)
