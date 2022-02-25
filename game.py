@@ -1,4 +1,3 @@
-from ast import While
 import pygame
 import random
 import os
@@ -32,6 +31,8 @@ FPS = 60
 pygame.display.set_caption('Clicky Bicky Game')
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
+
+berries = pygame.sprite.Group()
 
 # init background
 class Background(pygame.sprite.Sprite):
@@ -103,19 +104,19 @@ class ClockText:
         self.font = pygame.font.Font(os.path.dirname(__file__) + "\\Quinquefive.ttf", 34)
         self.current_time = time.time()
         self.s = 0
-        self.m = 0
+        self.m = 1
         self.color = (3, 169, 244)
-        self.text = self.font.render("0:00", True, self.color)
+        self.text = self.font.render("1:00", True, self.color)
         # self.text = self.font.render(str(self.m) + ':' + str(self.s), True, (255, 255, 255))
         self.rect = self.text.get_rect()
         self.rect.center = (SCREEN_WIDTH//2, SCREEN_HEIGHT // 2 - 195)
     def update(self):
         if time.time() - self.current_time >= 1:
             self.current_time = time.time()
-            self.s += 1
-            if self.s == 60:
-                self.s = 0
-                self.m += 1
+            if self.m == 1:
+                self.s = 60
+                self.m -= 1
+            self.s -= 1
         self.text = self.font.render(str(self.m) + ':' + str(self.s), True, self.color)
     
     def render(self):
@@ -129,7 +130,7 @@ class ClockText:
 class Fruit(pygame.sprite.Sprite):
     def __init__(self):
         super(Fruit, self).__init__()
-        self.transform_factor = 110
+        self.transform_factor = 100
         self.sprites = []
         self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\pixil-frame-0.png").convert_alpha())
         self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\pixil-frame-1.png").convert_alpha())
@@ -188,11 +189,12 @@ class Fruit(pygame.sprite.Sprite):
         return False
 
     def scale(self):
-        if self.transform_factor >= 50:
+        if self.transform_factor >= 70:
             self.transform_factor -= 10
             self.image = pygame.transform.scale(self.image, (self.transform_factor, self.transform_factor))
             self.rect = self.image.get_rect()
-
+        else:
+            self.kill()
     def render(self):
         screen.blit(self.image, (self.posX, self.posY))
 
@@ -257,6 +259,12 @@ cl = ClockText()
 ui = UI()
 sc = Score()
 
+berries.add(fr)
+
+ADDBERRY = pygame.USEREVENT + 1
+event_time = 3000
+pygame.time.set_timer(ADDBERRY, event_time)
+
 running = True
 while running:    
     for event in pygame.event.get():
@@ -266,20 +274,33 @@ while running:
             if event.key == K_ESCAPE:
                 running = False
 
-    #if the mouse is clicked
-    if event.type == MOUSEBUTTONDOWN:
-        (x,y) = pygame.mouse.get_pos()
-        fr.is_clicked(x,y)
-
-    print(fr.transform_factor)
+        if event.type == ADDBERRY:
+            new_fr = Fruit()
+            berries.add(new_fr)
+            if event_time >= 1000:
+                event_time = event_time - 100
+                pygame.time.set_timer(ADDBERRY, event_time)
+            #print(event_time)
+        
+        #if the mouse is clicked
+        for fruit in berries:
+            if event.type == MOUSEBUTTONDOWN:
+                (x,y) = pygame.mouse.get_pos()
+                fruit.is_clicked(x,y)
+                print(len(berries))
+        
     bg.update()
     bg.render()
 
-    if fr.update() == True:
-        sc.update()
-        if sc.counter == 0:
-            fr.scale()    
-    fr.render()
+    for fruit in berries:
+        if fruit.update() == True:
+            sc.update()
+            if sc.counter == 0:
+                fruit.scale()
+                berries.remove(fruit)
+                del fruit
+    for fruit in berries:
+        fruit.render()
     
     ui.render()
     cl.update()
