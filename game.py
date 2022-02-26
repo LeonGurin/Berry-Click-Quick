@@ -112,6 +112,64 @@ class StartButton(pygame.sprite.Sprite):
         #draw a border around the button
         # pygame.draw.rect(screen, (0,0,0), (self.posX+100, self.posY+150, self.w1, self.h1), 2)
 
+class QuitButton(pygame.sprite.Sprite):
+    def __init__(self):
+        super(QuitButton, self).__init__()
+        self.sprites = []
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quit-frame-0.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quit-frame-1.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quit-frame-2.png").convert_alpha())
+        # self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quit-frame-3.png").convert_alpha())
+        # self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quit-frame-4.png").convert_alpha())
+        # self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quit-frame-5.png").convert_alpha())
+        # self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quit-frame-6.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quit-frame-7.png").convert_alpha())
+        # self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quit-frame-8.png").convert_alpha())
+        self.current_sprite = 0
+        self.image = self.sprites[self.current_sprite]
+        self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH-200, SCREEN_HEIGHT-200))
+        # self.image = pygame.Surface((100, 100))
+        self.rect = self.image.get_rect()
+        self.posX = SCREEN_WIDTH / 2 - self.rect.width / 2 + 100
+        self.posY = SCREEN_HEIGHT / 2 - self.rect.height / 2
+        self.is_animating = True
+
+        self.h1 = 75
+        self.w1 = 200
+
+    def is_clicked(self,x,y):
+        if x > self.posX+100 and x < self.posX + 250:
+            if y > self.posY+150+175 and y < self.posY + 225+200:
+                return True
+        return False
+
+    def hover(self,x,y):
+        if x > self.posX+100 and x < self.posX + 250:
+            if y > self.posY+150+175 and y < self.posY + 225+200:
+                self.is_animating = False
+                self.current_sprite = 0
+            self.image = pygame.image.load(os.path.dirname(__file__) + "\\quitButtonClicked.png").convert_alpha()
+            self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH-100, SCREEN_HEIGHT-100))
+            self.rect = self.image.get_rect()
+        else:
+            self.is_animating = True
+
+    def update(self):
+        if self.is_animating:
+            self.current_sprite += 0.05
+            
+            if self.current_sprite >= len(self.sprites):
+                self.current_sprite = 0
+            
+            self.image = self.sprites[int(self.current_sprite)]
+            self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH-100, SCREEN_HEIGHT-100))
+            self.rect = self.image.get_rect()
+
+    def render(self):
+        screen.blit(self.image, (self.posX, self.posY))
+        #draw a border around the button
+        pygame.draw.rect(screen, (0,0,0), (self.posX+100, self.posY+150+175, self.w1, self.h1), 2)
+
 class Title(pygame.sprite.Sprite):
     def __init__(self):
         super(Title, self).__init__()
@@ -127,14 +185,69 @@ class Title(pygame.sprite.Sprite):
 class UI(pygame.sprite.Sprite):
     def __init__(self):
         super(UI, self).__init__()
-        self.surf = pygame.image.load(os.path.dirname(__file__) + "\\uiBar5.png").convert_alpha()
+        self.surf = pygame.image.load(os.path.dirname(__file__) + "\\ui.png").convert_alpha()
         self.surf = pygame.transform.scale(self.surf, (SCREEN_WIDTH+36, 600))
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect()
-        #self.rect.center = (SCREEN_WIDTH // 2, 222)
-
+    
     def render(self):
         screen.blit(self.surf, (-15, 0))
+
+class UI_menuButton(pygame.sprite.Sprite):
+    def __init__(self):
+        super(UI_menuButton, self).__init__()
+        # self.image = pygame.image.load(os.path.dirname(__file__) + "\\uiMenu.png").convert_alpha()
+        # self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH+36, 600))
+        # self.rect = self.image.get_rect()
+        self.posX = 338 + 80
+        self.posY = 18
+        self.h1 = 78
+        self.w1 = 78
+
+    def is_clicked(self,x,y):
+        if x > self.posX and x < self.posX + self.w1:
+            if y > self.posY and y < self.posY + self.h1:
+                return True
+        return False
+
+    def hover(self,x,y):
+        if x > self.posX and x < self.posX + self.w1:
+            if y > self.posY and y < self.posY + self.h1:
+                self.image = pygame.image.load(os.path.dirname(__file__) + "\\uiMenu.png").convert_alpha()
+                self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH+36, 600))
+                screen.blit(self.image, (-15, 0))
+
+    # def render(self):
+    #     #draw a border around the button
+    #     pygame.draw.rect(screen, (0,0,0), (self.posX, self.posY, self.w1, self.h1), 2)
+
+class UI_closeButton(pygame.sprite.Sprite):
+    def __init__(self):
+        super(UI_closeButton, self).__init__()
+        # self.image = pygame.image.load(os.path.dirname(__file__) + "\\uiMenu.png").convert_alpha()
+        # self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH+36, 600))
+        # self.rect = self.image.get_rect()
+        self.posX = 338
+        self.posY = 18
+        self.h1 = 78
+        self.w1 = 78
+
+    def is_clicked(self,x,y):
+        if x > self.posX and x < self.posX + self.w1:
+            if y > self.posY and y < self.posY + self.h1:
+                return True
+        return False
+
+    def hover(self,x,y):
+        if x > self.posX and x < self.posX + self.w1:
+            if y > self.posY and y < self.posY + self.h1:
+                self.image = pygame.image.load(os.path.dirname(__file__) + "\\uiClose.png").convert_alpha()
+                self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH+36, 600))
+                screen.blit(self.image, (-15, 0))
+
+    # def render(self):
+    #     #draw a border around the button
+    #     pygame.draw.rect(screen, (0,0,0), (self.posX, self.posY, self.w1, self.h1), 2)
 
 class ClockText:
     def __init__(self):
@@ -259,9 +372,11 @@ class Score:
 # init objects
 bg = Background()
 st = StartButton()
+qt = QuitButton()
 tt = Title()
 
 startGame = False
+running = True
 
 #delay
 pygame.time.delay(100)
@@ -278,6 +393,9 @@ while startGame == False:
                 pygame.quit()
                 sys.exit()
     (x,y) = pygame.mouse.get_pos()
+    if qt.is_clicked(x,y) and event.type == MOUSEBUTTONDOWN:
+        print("ended")
+        running = False    
     if event.type == MOUSEBUTTONDOWN:
         startGame = st.is_clicked(x,y)
     bg.render()
@@ -286,6 +404,9 @@ while startGame == False:
     st.hover(x,y)
     st.update()
     st.render()
+    qt.hover(x,y)
+    qt.update()
+    qt.render()
     pygame.display.update()
     clock.tick(FPS)
 
@@ -295,7 +416,10 @@ time.sleep(.1)
 fr = Fruit()
 cl = ClockText()
 ui = UI()
+uim = UI_menuButton()
+uic = UI_closeButton()
 sc = Score()
+
 
 berries.add(fr)
 
@@ -303,14 +427,10 @@ ADDBERRY = pygame.USEREVENT + 1
 event_time = 3000
 pygame.time.set_timer(ADDBERRY, event_time)
 
-running = True
 while running:    
     for event in pygame.event.get():
         if event.type == QUIT:
             running = False
-        if event.type == KEYDOWN:
-            if event.key == K_ESCAPE:
-                running = False
 
         if event.type == ADDBERRY:
             new_fr = Fruit()
@@ -319,14 +439,19 @@ while running:
                 event_time = event_time - 100
                 pygame.time.set_timer(ADDBERRY, event_time)
             #print(event_time)
-        
-        #if the mouse is clicked
-        for fruit in berries:
-            if event.type == MOUSEBUTTONDOWN:
-                (x,y) = pygame.mouse.get_pos()
-                fruit.is_clicked(x,y)
-                print(len(berries))
-        
+
+    (x,y) = pygame.mouse.get_pos()
+    
+    if uic.is_clicked(x,y) and event.type == MOUSEBUTTONDOWN:
+        print("ended")
+        running = False
+
+    #if the mouse is clicked
+    for fruit in berries:
+        if event.type == MOUSEBUTTONDOWN:
+            fruit.is_clicked(x,y)
+            print(len(berries))
+
     bg.update()
     bg.render()
 
@@ -341,6 +466,8 @@ while running:
         fruit.render()
     
     ui.render()
+    uim.hover(x,y)
+    uic.hover(x,y)
     cl.update()
     cl.render()
     
