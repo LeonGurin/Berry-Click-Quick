@@ -1,3 +1,4 @@
+from turtle import update
 import pygame
 import random
 import os
@@ -38,7 +39,7 @@ berries = pygame.sprite.Group()
 class Background(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load(os.path.dirname(__file__) + "\\bgSky.png").convert()
+        self.image = pygame.image.load(os.path.dirname(__file__) + "\\backgroundClouds.png").convert()
         self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH, SCREEN_HEIGHT))
         self.rect = self.image.get_rect()
         self.x = 0
@@ -59,20 +60,57 @@ class Background(pygame.sprite.Sprite):
 class StartButton(pygame.sprite.Sprite):
     def __init__(self):
         super(StartButton, self).__init__()
-        self.image = pygame.image.load(os.path.dirname(__file__) + "\\StartButton.png").convert_alpha()
-        self.image.set_colorkey((255, 255, 255), RLEACCEL)
-        self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.sprites = []
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\start-frame-0.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\start-frame-1.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\start-frame-2.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\start-frame-3.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\start-frame-4.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\start-frame-5.png").convert_alpha())
+        self.current_sprite = 0
+        self.image = self.sprites[self.current_sprite]
+        self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH-100, SCREEN_HEIGHT-100))
         # self.image = pygame.Surface((100, 100))
         self.rect = self.image.get_rect()
         self.posX = SCREEN_WIDTH / 2 - self.rect.width / 2
-        self.posY = SCREEN_HEIGHT / 2 - self.rect.height / 2 + 120
+        self.posY = SCREEN_HEIGHT / 2 - self.rect.height / 2 + 30
+        self.is_animating = True
+
+        self.h1 = 75
+        self.w1 = 200
+
     def is_clicked(self,x,y):
         if x > self.posX and x < self.posX + self.rect.width:
             if y > self.posY and y < self.posY + self.rect.height:
                 return True
         return False
+
+    def hover(self,x,y):
+        if x > self.posX+100 and x < self.posX + 300:
+            if y > self.posY+150 and y < self.posY + 225:
+                self.is_animating = False
+                self.current_sprite = 0
+                self.image = pygame.image.load(os.path.dirname(__file__) + "\\startButtonPressed.png").convert_alpha()
+                self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH-100, SCREEN_HEIGHT-100))
+            self.rect = self.image.get_rect()
+        else:
+            self.is_animating = True
+
+    def update(self):
+        if self.is_animating:
+            self.current_sprite += 0.1
+            
+            if self.current_sprite >= len(self.sprites):
+                self.current_sprite = 0
+            
+            self.image = self.sprites[int(self.current_sprite)]
+            self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH-100, SCREEN_HEIGHT-100))
+            self.rect = self.image.get_rect()
+
     def render(self):
         screen.blit(self.image, (self.posX, self.posY))
+        #draw a border around the button
+        # pygame.draw.rect(screen, (0,0,0), (self.posX+100, self.posY+150, self.w1, self.h1), 2)
 
 class Title(pygame.sprite.Sprite):
     def __init__(self):
@@ -82,10 +120,9 @@ class Title(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH, SCREEN_HEIGHT))
         self.rect = self.image.get_rect()
         self.posX = SCREEN_WIDTH / 2 - self.rect.width / 2
-        self.posY = SCREEN_HEIGHT / 2 - self.rect.height / 2 - 50
-        self.rect = self.image.get_rect()
+        self.posY = SCREEN_HEIGHT / 2 - self.rect.height / 2 - 75
     def render(self):
-        screen.blit(self.image, self.rect)
+        screen.blit(self.image, (self.posX, self.posY))
 
 class UI(pygame.sprite.Sprite):
     def __init__(self):
@@ -115,7 +152,7 @@ class ClockText:
             self.current_time = time.time()
             self.s -= 1
         self.text = self.font.render(str(self.m) + ':' + str(self.s), True, self.color)
-    
+
     def render(self):
         if self.s < 10:
             self.text = self.font.render(str(self.m) + ':0' + str(self.s), True, self.color)
@@ -129,15 +166,15 @@ class Fruit(pygame.sprite.Sprite):
         super(Fruit, self).__init__()
         self.transform_factor = 100
         self.sprites = []
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\pixil-frame-0.png").convert_alpha())
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\pixil-frame-1.png").convert_alpha())
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\pixil-frame-2.png").convert_alpha())
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\pixil-frame-3.png").convert_alpha())
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\pixil-frame-4.png").convert_alpha())
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\pixil-frame-5.png").convert_alpha())
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\pixil-frame-6.png").convert_alpha())
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\pixil-frame-7.png").convert_alpha())
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\pixil-frame-8.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berry-frame-0.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berry-frame-1.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berry-frame-2.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berry-frame-3.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berry-frame-4.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berry-frame-5.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berry-frame-6.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berry-frame-7.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berry-frame-8.png").convert_alpha())
         self.current_sprite = 0
         self.image = self.sprites[self.current_sprite]
         self.image = pygame.transform.scale(self.image, (self.transform_factor, self.transform_factor))
@@ -186,13 +223,15 @@ class Fruit(pygame.sprite.Sprite):
         return False
 
     def scale(self):
-        if self.transform_factor >= 70:
-            self.transform_factor -= 10
+        if self.transform_factor >= 50:
+            self.transform_factor -= 15
             self.image = pygame.transform.scale(self.image, (self.transform_factor, self.transform_factor))
             self.rect = self.image.get_rect()
         else:
             self.kill()
     def render(self):
+        #draw a border around the fruit
+        pygame.draw.rect(screen, (255, 255, 255), (self.posX, self.posY, self.rect.width, self.rect.height), 1)
         screen.blit(self.image, (self.posX, self.posY))
 
 class Score:
@@ -238,12 +277,14 @@ while startGame == False:
             if event.key == K_ESCAPE:
                 pygame.quit()
                 sys.exit()
+    (x,y) = pygame.mouse.get_pos()
     if event.type == MOUSEBUTTONDOWN:
-        (x,y) = pygame.mouse.get_pos()
         startGame = st.is_clicked(x,y)
     bg.render()
     bg.update()
     tt.render()
+    st.hover(x,y)
+    st.update()
     st.render()
     pygame.display.update()
     clock.tick(FPS)
