@@ -103,19 +103,16 @@ class ClockText:
     def __init__(self):
         self.font = pygame.font.Font(os.path.dirname(__file__) + "\\Quinquefive.ttf", 34)
         self.current_time = time.time()
-        self.s = 0
-        self.m = 1
+        self.s = 10
+        self.m = 0
         self.color = (3, 169, 244)
-        self.text = self.font.render("1:00", True, self.color)
+        self.text = self.font.render("0:10", True, self.color)
         # self.text = self.font.render(str(self.m) + ':' + str(self.s), True, (255, 255, 255))
         self.rect = self.text.get_rect()
         self.rect.center = (SCREEN_WIDTH//2, SCREEN_HEIGHT // 2 - 195)
     def update(self):
         if time.time() - self.current_time >= 1:
             self.current_time = time.time()
-            if self.m == 1:
-                self.s = 60
-                self.m -= 1
             self.s -= 1
         self.text = self.font.render(str(self.m) + ':' + str(self.s), True, self.color)
     
