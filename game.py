@@ -26,7 +26,8 @@ pygame.init()
 
 SCREEN_WIDTH = 500
 SCREEN_HEIGHT = 500
-FPS = 60
+FPS = 90
+MAX_BERRIES = 8
 
 # init screen and clock
 pygame.display.set_caption('Clicky Bicky Game')
@@ -168,7 +169,7 @@ class QuitButton(pygame.sprite.Sprite):
     def render(self):
         screen.blit(self.image, (self.posX, self.posY))
         #draw a border around the button
-        pygame.draw.rect(screen, (0,0,0), (self.posX+100, self.posY+150+175, self.w1, self.h1), 2)
+        # pygame.draw.rect(screen, (0,0,0), (self.posX+100, self.posY+150+175, self.w1, self.h1), 2)
 
 class Title(pygame.sprite.Sprite):
     def __init__(self):
@@ -349,7 +350,7 @@ class Fruit(pygame.sprite.Sprite):
 
 class Score:
     def __init__(self):
-        self.font = pygame.font.Font(os.path.dirname(__file__) + "\\Quinquefive.ttf", 34)
+        self.font = pygame.font.Font(os.path.dirname(__file__) + "\\Quinquefive.ttf", 20)
         self.cur_time = time.time()
         self.color = (0, 0, 0)
         self.text = self.font.render("0", True, self.color)
@@ -364,6 +365,26 @@ class Score:
     def render(self):
         self.text = self.font.render(str(self.counter), True, self.color)
         screen.blit(self.text, self.rect)
+
+class Menu(pygame.sprite.Sprite):
+    def __init__(self):
+        super(Menu, self).__init__()
+        self.pause_text = pygame.image.load(os.path.dirname(__file__) + "\\pausedText.png").convert_alpha()
+        self.pause_rect = self.pause_text.get_rect()
+
+        self.exit_status = -1
+    
+    def is_clicked(self,x,y):
+        if self.pause_rect.left < x < self.pause_rect.right:
+            if self.pause_rect.top < y < self.pause_rect.bottom:
+                self.exit_status = 1
+                return True
+        return False
+
+    def render(self):
+        screen.blit(self.pause_text, self.pause_rect)
+        pygame.display.update()
+
 
 #-------------------#
 #  code starts here
@@ -388,14 +409,10 @@ while startGame == False:
         if event.type == QUIT:
             pygame.quit()
             sys.exit()
-        if event.type == KEYDOWN:
-            if event.key == K_ESCAPE:
-                pygame.quit()
-                sys.exit()
     (x,y) = pygame.mouse.get_pos()
     if qt.is_clicked(x,y) and event.type == MOUSEBUTTONDOWN:
-        print("ended")
-        running = False    
+        pygame.quit()
+        sys.exit()
     if event.type == MOUSEBUTTONDOWN:
         startGame = st.is_clicked(x,y)
     bg.render()
@@ -410,6 +427,10 @@ while startGame == False:
     pygame.display.update()
     clock.tick(FPS)
 
+del st
+del qt
+del tt
+
 # delay
 time.sleep(.1)
 # game loop
@@ -419,7 +440,7 @@ ui = UI()
 uim = UI_menuButton()
 uic = UI_closeButton()
 sc = Score()
-
+men = Menu()
 
 berries.add(fr)
 
@@ -427,30 +448,46 @@ ADDBERRY = pygame.USEREVENT + 1
 event_time = 3000
 pygame.time.set_timer(ADDBERRY, event_time)
 
-while running:    
+while running:
+    (x,y) = pygame.mouse.get_pos()
     for event in pygame.event.get():
         if event.type == QUIT:
             running = False
 
         if event.type == ADDBERRY:
-            new_fr = Fruit()
-            berries.add(new_fr)
+            if len(berries) < MAX_BERRIES:
+                new_fr = Fruit()
+                berries.add(new_fr)
             if event_time >= 1000:
                 event_time = event_time - 100
                 pygame.time.set_timer(ADDBERRY, event_time)
-            #print(event_time)
-
-    (x,y) = pygame.mouse.get_pos()
-    
-    if uic.is_clicked(x,y) and event.type == MOUSEBUTTONDOWN:
-        print("ended")
-        running = False
-
-    #if the mouse is clicked
-    for fruit in berries:
+                
         if event.type == MOUSEBUTTONDOWN:
-            fruit.is_clicked(x,y)
-            print(len(berries))
+            if uic.is_clicked(x,y):
+                running = False
+            if uim.is_clicked(x,y):
+                men.render()
+            for fruit in berries:
+                fruit.is_clicked(x,y)
+                # if fruit.update() == True:
+                #     sc.update()
+                #     if sc.counter == 0:
+                #         # fruit.scale()
+                #         berries.remove(fruit)
+                #         del fruit
+                #         continue
+                # fruit.render()        
+
+    # if uic.is_clicked(x,y) and event.type == MOUSEBUTTONDOWN:
+    #     print("ended")
+    #     running = False
+    # if uim.is_clicked(x,y) and event.type == MOUSEBUTTONDOWN or men.exit_status == 0:
+    #     men.render()
+    
+    # #if the mouse is clicked
+    # for fruit in berries:
+    #     if event.type == MOUSEBUTTONDOWN:
+    #         fruit.is_clicked(x,y)
 
     bg.update()
     bg.render()
@@ -462,8 +499,8 @@ while running:
                 fruit.scale()
                 berries.remove(fruit)
                 del fruit
-    for fruit in berries:
-        fruit.render()
+                continue
+        fruit.render()        
     
     ui.render()
     uim.hover(x,y)
