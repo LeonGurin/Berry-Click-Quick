@@ -1,4 +1,3 @@
-from turtle import update
 import pygame
 import random
 import os
@@ -62,12 +61,12 @@ class StartButton(pygame.sprite.Sprite):
     def __init__(self):
         super(StartButton, self).__init__()
         self.sprites = []
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\start-frame-0.png").convert_alpha())
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\start-frame-1.png").convert_alpha())
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\start-frame-2.png").convert_alpha())
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\start-frame-3.png").convert_alpha())
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\start-frame-4.png").convert_alpha())
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\start-frame-5.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\startFrames\\start-frame-0.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\startFrames\\start-frame-1.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\startFrames\\start-frame-2.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\startFrames\\start-frame-3.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\startFrames\\start-frame-4.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\startFrames\\start-frame-5.png").convert_alpha())
         self.current_sprite = 0
         self.image = self.sprites[self.current_sprite]
         self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH-100, SCREEN_HEIGHT-100))
@@ -117,15 +116,15 @@ class QuitButton(pygame.sprite.Sprite):
     def __init__(self):
         super(QuitButton, self).__init__()
         self.sprites = []
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quit-frame-0.png").convert_alpha())
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quit-frame-1.png").convert_alpha())
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quit-frame-2.png").convert_alpha())
-        # self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quit-frame-3.png").convert_alpha())
-        # self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quit-frame-4.png").convert_alpha())
-        # self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quit-frame-5.png").convert_alpha())
-        # self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quit-frame-6.png").convert_alpha())
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quit-frame-7.png").convert_alpha())
-        # self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quit-frame-8.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quitFrames\\quit-frame-0.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quitFrames\\quit-frame-1.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quitFrames\\quit-frame-2.png").convert_alpha())
+        # self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quitFrames\\quit-frame-3.png").convert_alpha())
+        # self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quitFrames\\quit-frame-4.png").convert_alpha())
+        # self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quitFrames\\quit-frame-5.png").convert_alpha())
+        # self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quitFrames\\quit-frame-6.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quitFrames\\quit-frame-7.png").convert_alpha())
+        # self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\quitFrames\\quit-frame-8.png").convert_alpha())
         self.current_sprite = 0
         self.image = self.sprites[self.current_sprite]
         self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH-200, SCREEN_HEIGHT-200))
@@ -186,7 +185,7 @@ class Title(pygame.sprite.Sprite):
 class UI(pygame.sprite.Sprite):
     def __init__(self):
         super(UI, self).__init__()
-        self.surf = pygame.image.load(os.path.dirname(__file__) + "\\ui.png").convert_alpha()
+        self.surf = pygame.image.load(os.path.dirname(__file__) + "\\uiBar.png").convert_alpha()
         self.surf = pygame.transform.scale(self.surf, (SCREEN_WIDTH+36, 600))
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect()
@@ -261,6 +260,15 @@ class ClockText:
         # self.text = self.font.render(str(self.m) + ':' + str(self.s), True, (255, 255, 255))
         self.rect = self.text.get_rect()
         self.rect.center = (SCREEN_WIDTH//2, SCREEN_HEIGHT // 2 - 195)
+    
+    def gameOver(self):
+        if self.s == 0:
+            return True
+        return False
+
+    def addTime(self):
+        self.s += 1
+    
     def update(self):
         if time.time() - self.current_time >= 1:
             self.current_time = time.time()
@@ -276,29 +284,40 @@ class ClockText:
 
 # fruit object
 class Fruit(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, tf = None, x = None, y = None):
         super(Fruit, self).__init__()
-        self.transform_factor = 100
+        if tf == None:
+            self.transform_factor = random.randint(50,100)
+        else:
+            self.transform_factor = tf
+        if x == None:
+            self.posX = random.randint(self.transform_factor + 200, SCREEN_WIDTH - self.transform_factor)
+        else:
+            self.posX = x
+        if y == None:
+            self.posY = random.randint(self.transform_factor + 200, SCREEN_HEIGHT - self.transform_factor)
+        else:
+            self.posY = y
+        
         self.sprites = []
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berry-frame-0.png").convert_alpha())
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berry-frame-1.png").convert_alpha())
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berry-frame-2.png").convert_alpha())
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berry-frame-3.png").convert_alpha())
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berry-frame-4.png").convert_alpha())
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berry-frame-5.png").convert_alpha())
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berry-frame-6.png").convert_alpha())
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berry-frame-7.png").convert_alpha())
-        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berry-frame-8.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berryFrames\\berry-frame-0.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berryFrames\\berry-frame-1.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berryFrames\\berry-frame-2.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berryFrames\\berry-frame-3.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berryFrames\\berry-frame-4.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berryFrames\\berry-frame-5.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berryFrames\\berry-frame-6.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berryFrames\\berry-frame-7.png").convert_alpha())
+        self.sprites.append(pygame.image.load(os.path.dirname(__file__) + "\\berryFrames\\berry-frame-8.png").convert_alpha())
         self.current_sprite = 0
         self.image = self.sprites[self.current_sprite]
         self.image = pygame.transform.scale(self.image, (self.transform_factor, self.transform_factor))
         self.rect = self.image.get_rect()
-        self.posX = SCREEN_WIDTH / 2 - self.rect.width / 2
-        self.posY = SCREEN_HEIGHT / 2 - self.rect.height / 2
         self.tempX = self.posX
         self.tempY = self.posY
         self.click_status = False
         self.is_animating = False
+
     def is_clicked(self,x,y):
         if self.posX < x < self.posX + self.rect.width:
             if self.posY < y < self.posY + self.rect.height:
@@ -336,13 +355,12 @@ class Fruit(pygame.sprite.Sprite):
             self.rect = self.image.get_rect()
         return False
 
-    def scale(self):
-        if self.transform_factor >= 50:
-            self.transform_factor -= 15
-            self.image = pygame.transform.scale(self.image, (self.transform_factor, self.transform_factor))
-            self.rect = self.image.get_rect()
-        else:
-            self.kill()
+    # def scale(self):
+    #     if self.transform_factor >= 50:
+    #         self.transform_factor -= 15
+    #         self.image = pygame.transform.scale(self.image, (self.transform_factor, self.transform_factor))
+    #         self.rect = self.image.get_rect()
+    
     def render(self):
         #draw a border around the fruit
         pygame.draw.rect(screen, (255, 255, 255), (self.posX, self.posY, self.rect.width, self.rect.height), 1)
@@ -350,41 +368,109 @@ class Fruit(pygame.sprite.Sprite):
 
 class Score:
     def __init__(self):
-        self.font = pygame.font.Font(os.path.dirname(__file__) + "\\Quinquefive.ttf", 20)
+        self.font = pygame.font.Font(os.path.dirname(__file__) + "\\Quinquefive.ttf", 24)
         self.cur_time = time.time()
         self.color = (0, 0, 0)
         self.text = self.font.render("0", True, self.color)
         self.counter = 0
+        self.scr = 0
         self.rect = self.text.get_rect()
-        self.rect.center = (SCREEN_WIDTH//2 - 121, SCREEN_HEIGHT // 2 - 195)
+        self.rect.center = (SCREEN_WIDTH//2 - 138, SCREEN_HEIGHT // 2 - 195)
+    
+    def getScore(self):
+        return str(self.scr)
     def update(self):
         if self.counter == 5:
             self.counter = 0
         else:
             self.counter += 1
+            self.scr += 1
     def render(self):
-        self.text = self.font.render(str(self.counter), True, self.color)
+        if self.scr < 10:
+            self.font = pygame.font.Font(os.path.dirname(__file__) + "\\Quinquefive.ttf", 32)
+            self.rect = self.text.get_rect()
+            self.rect.center = (SCREEN_WIDTH//2 - 121, SCREEN_HEIGHT // 2 - 195)
+            self.text = self.font.render(str(self.scr), True, self.color)
+        else:
+            self.font = pygame.font.Font(os.path.dirname(__file__) + "\\Quinquefive.ttf", 22)
+            self.rect = self.text.get_rect()
+            self.rect.center = (SCREEN_WIDTH//2 - 126, SCREEN_HEIGHT // 2 - 195)
+            self.text = self.font.render(str(self.scr), True, self.color)
         screen.blit(self.text, self.rect)
 
 class Menu(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, pause_or_gameover, score):
         super(Menu, self).__init__()
-        self.pause_text = pygame.image.load(os.path.dirname(__file__) + "\\pausedText.png").convert_alpha()
-        self.pause_rect = self.pause_text.get_rect()
+        if pause_or_gameover == "pause":
+            self.text = pygame.image.load(os.path.dirname(__file__) + "\\pausedText.png").convert_alpha()
+            self.text_rect = self.text.get_rect()
+        elif pause_or_gameover == "gameover":
+            self.text = pygame.image.load(os.path.dirname(__file__) + "\\gameOver.png").convert_alpha()
+            self.text_rect = self.text.get_rect()
+        
+        self.score = score
 
-        self.exit_status = -1
+        self.scoreScreen = pygame.image.load(os.path.dirname(__file__) + "\\scoreScreen.png").convert_alpha()
+        self.scoreScreen_rect = self.scoreScreen.get_rect()
+        self.retryButton = pygame.image.load(os.path.dirname(__file__) + "\\retryButton.png").convert_alpha()
+        self.retryButton_rect = self.retryButton.get_rect()
+        self.quitButton = pygame.image.load(os.path.dirname(__file__) + "\\exitButton.png").convert_alpha()
+        self.quitButton_rect = self.quitButton.get_rect()
+
+        self.quitX = SCREEN_WIDTH / 2 - 45
+        self.quitY = SCREEN_HEIGHT / 2 + 165
+        self.quit_h = 80
+        self.quit_w = 95
+
+        self.retryX = SCREEN_WIDTH / 2 - 45
+        self.retryY = SCREEN_HEIGHT / 2 + 80
+        self.retry_h = 80
+        self.retry_w = 95
+
+    # def is_clicked(self,x,y):
+    #     if self.pause_rect.left < x < self.pause_rect.right:
+    #         if self.pause_rect.top < y < self.pause_rect.bottom:
+    #             self.exit_status = 1
+    #             return True
+    #     return False
     
-    def is_clicked(self,x,y):
-        if self.pause_rect.left < x < self.pause_rect.right:
-            if self.pause_rect.top < y < self.pause_rect.bottom:
-                self.exit_status = 1
+    def quitHover(self,x,y):
+        if self.quitX < x <  self.quitX + self.quit_w:
+            if self.quitY < y < self.quitY + self.quit_h:
+                self.quitButton = pygame.image.load(os.path.dirname(__file__) + "\\exitButtonHover.png").convert_alpha()
+                self.quitButton_rect = self.quitButton.get_rect()
+        else:
+            self.quitButton = pygame.image.load(os.path.dirname(__file__) + "\\exitButton.png").convert_alpha()
+            self.quitButton_rect = self.quitButton.get_rect()
+    
+    def quitClicked(self,x,y):
+        if self.quitX < x < self.quitX + self.quit_w:
+            if self.quitY < y < self.quitY + self.quit_h:
+                return True
+        return False
+
+    def retryHover(self,x,y):
+        if self.retryX < x < self.retryX + self.retry_w:
+            if self.retryY < y < self.retryY + self.retry_h:
+                self.retryButton = pygame.image.load(os.path.dirname(__file__) + "\\retryButtonHover.png").convert_alpha()
+                self.retryButton_rect = self.retryButton.get_rect()
+        else:
+            self.retryButton = pygame.image.load(os.path.dirname(__file__) + "\\retryButton.png").convert_alpha()
+            self.retryButton_rect = self.retryButton.get_rect()
+
+    def retryClicked(self,x,y):
+        if self.retryX < x < self.retryX + self.retry_w:
+            if self.retryY < y < self.retryY + self.retry_h:
                 return True
         return False
 
     def render(self):
-        screen.blit(self.pause_text, self.pause_rect)
-        pygame.display.update()
-
+        # pygame.draw.rect(screen, (255,0,255), (self.quitX, self.quitY, self.quit_w, self.quit_h), 2)
+        pygame.draw.rect(screen, (255,0,255), (self.retryX, self.retryY, self.retry_w, self.retry_h), 2)
+        screen.blit(self.text, self.text_rect)
+        screen.blit(self.scoreScreen, self.scoreScreen_rect)
+        screen.blit(self.retryButton, self.retryButton_rect)
+        screen.blit(self.quitButton, self.quitButton_rect)
 
 #-------------------#
 #  code starts here
@@ -398,6 +484,7 @@ tt = Title()
 
 startGame = False
 running = True
+running2 = True
 
 #delay
 pygame.time.delay(100)
@@ -434,83 +521,115 @@ del tt
 # delay
 time.sleep(.1)
 # game loop
-fr = Fruit()
+# fr = Fruit(100, SCREEN_HEIGHT / 2 - 100 / 2, SCREEN_WIDTH / 2 - 100 / 2)
 cl = ClockText()
-ui = UI()
+ui_bar = UI()
 uim = UI_menuButton()
 uic = UI_closeButton()
 sc = Score()
-men = Menu()
 
+# berries.add(fr)
+
+# ADDBERRY = pygame.USEREVENT + 1
+# event_time = 3000
+# pygame.time.set_timer(ADDBERRY, event_time)
+
+fr = Fruit(100, SCREEN_HEIGHT / 2 - 100 / 2, SCREEN_WIDTH / 2 - 100 / 2)
 berries.add(fr)
-
 ADDBERRY = pygame.USEREVENT + 1
 event_time = 3000
 pygame.time.set_timer(ADDBERRY, event_time)
 
-while running:
-    (x,y) = pygame.mouse.get_pos()
-    for event in pygame.event.get():
-        if event.type == QUIT:
+while running2:
+    while running:
+        (x,y) = pygame.mouse.get_pos()
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                running = False
+                pygame.quit()
+                sys.exit()
+
+            if event.type == ADDBERRY:
+                if len(berries) < MAX_BERRIES:
+                    new_fr = Fruit()
+                    berries.add(new_fr)
+                if event_time >= 1000:
+                    event_time = event_time - 100
+                    pygame.time.set_timer(ADDBERRY, event_time)
+                    
+            if event.type == MOUSEBUTTONDOWN:
+                if uic.is_clicked(x,y):
+                        running = False
+                        pygame.quit()
+                        sys.exit()
+                if uim.is_clicked(x,y):
+                    men = Menu("pause", sc.getScore())
+                    berries.empty()
+                    event_time = 3000
+                    pygame.time.set_timer(ADDBERRY, event_time)
+                    running = False
+                for fruit in berries:
+                    fruit.is_clicked(x,y)                        
+                    # fruit.scale()
+        if cl.gameOver():
+            men = Menu("gameover")
+            berries.empty()
+            event_time = 3000
+            pygame.time.set_timer(ADDBERRY, event_time)
             running = False
 
-        if event.type == ADDBERRY:
-            if len(berries) < MAX_BERRIES:
-                new_fr = Fruit()
-                berries.add(new_fr)
-            if event_time >= 1000:
-                event_time = event_time - 100
-                pygame.time.set_timer(ADDBERRY, event_time)
-                
-        if event.type == MOUSEBUTTONDOWN:
-            if uic.is_clicked(x,y):
+        bg.update()
+        bg.render()
+
+        for fruit in berries:
+            if fruit.update() == True:
+                sc.update()
+                cl.addTime()
+                if sc.counter == 0:
+                    berries.remove(fruit)
+                    del fruit
+                    continue
+            fruit.render()        
+        
+        ui_bar.render()
+        uim.hover(x,y)
+        uic.hover(x,y)
+        cl.update()
+        cl.render()
+        
+        sc.render()
+        pygame.display.update()
+        clock.tick(FPS)
+
+    ###############################################################################
+    # menu loop
+    ###############################################################################
+
+    if running == False:
+        (x,y) = pygame.mouse.get_pos()
+        for event in pygame.event.get():
+            if event.type == QUIT:
                 running = False
-            if uim.is_clicked(x,y):
-                men.render()
-            for fruit in berries:
-                fruit.is_clicked(x,y)
-                # if fruit.update() == True:
-                #     sc.update()
-                #     if sc.counter == 0:
-                #         # fruit.scale()
-                #         berries.remove(fruit)
-                #         del fruit
-                #         continue
-                # fruit.render()        
+                pygame.quit()
+                sys.exit()
+        
+        if event.type == MOUSEBUTTONDOWN:
+            if men.quitClicked(x,y):
+                pygame.quit()
+                sys.exit()
+            if men.retryClicked(x,y):
+                fr = Fruit(100, SCREEN_HEIGHT / 2 - 100 / 2, SCREEN_WIDTH / 2 - 100 / 2)
+                berries.add(fr)
+                ADDBERRY = pygame.USEREVENT + 1
+                event_time = 3000
+                pygame.time.set_timer(ADDBERRY, event_time)
+                running = True
 
-    # if uic.is_clicked(x,y) and event.type == MOUSEBUTTONDOWN:
-    #     print("ended")
-    #     running = False
-    # if uim.is_clicked(x,y) and event.type == MOUSEBUTTONDOWN or men.exit_status == 0:
-    #     men.render()
-    
-    # #if the mouse is clicked
-    # for fruit in berries:
-    #     if event.type == MOUSEBUTTONDOWN:
-    #         fruit.is_clicked(x,y)
+        bg.update()
+        bg.render()
+        men.quitHover(x,y)
+        men.retryHover(x,y)
+        men.render()
 
-    bg.update()
-    bg.render()
-
-    for fruit in berries:
-        if fruit.update() == True:
-            sc.update()
-            if sc.counter == 0:
-                fruit.scale()
-                berries.remove(fruit)
-                del fruit
-                continue
-        fruit.render()        
-    
-    ui.render()
-    uim.hover(x,y)
-    uic.hover(x,y)
-    cl.update()
-    cl.render()
-    
-    sc.render()
-    pygame.display.update()
-    clock.tick(FPS)
-    
-pygame.quit()
-sys.exit()
+        pygame.display.update()
+        clock.tick(FPS)
