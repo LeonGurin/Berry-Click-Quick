@@ -5,8 +5,6 @@ import sys
 import time
 
 from pygame.locals import (
-    K_ESCAPE,
-    KEYDOWN,
     QUIT,
     MOUSEBUTTONDOWN,    
     RLEACCEL,
@@ -19,9 +17,9 @@ pygame.init()
 # fix berry bug ✔
 # add score bar and timer ✔
 # add sound
-# add game over
-# add high score
-# add pause
+# add game over ✔
+# add high score ✔
+# add pause ✔
 
 SCREEN_WIDTH = 500
 SCREEN_HEIGHT = 500
@@ -39,12 +37,12 @@ berries = pygame.sprite.Group()
 class Background(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load(os.path.dirname(__file__) + "\\backgroundClouds.png").convert()
+        self.image = pygame.image.load(os.path.dirname(__file__) + "\\background\\backgroundClouds.png").convert()
         self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH, SCREEN_HEIGHT))
         self.rect = self.image.get_rect()
         self.x = 0
         self.y = 0
-        self.y2 = self.rect.height
+        self.y2 = self.rect.height+1
     def update(self):
         self.y -= 2
         self.y2 -= 2
@@ -90,7 +88,7 @@ class StartButton(pygame.sprite.Sprite):
             if y > self.posY+150 and y < self.posY + 225:
                 self.is_animating = False
                 self.current_sprite = 0
-                self.image = pygame.image.load(os.path.dirname(__file__) + "\\startButtonPressed.png").convert_alpha()
+                self.image = pygame.image.load(os.path.dirname(__file__) + "\\pressed\\startButtonPressed.png").convert_alpha()
                 self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH-100, SCREEN_HEIGHT-100))
             self.rect = self.image.get_rect()
         else:
@@ -148,7 +146,7 @@ class QuitButton(pygame.sprite.Sprite):
             if y > self.posY+150+175 and y < self.posY + 225+200:
                 self.is_animating = False
                 self.current_sprite = 0
-            self.image = pygame.image.load(os.path.dirname(__file__) + "\\quitButtonClicked.png").convert_alpha()
+            self.image = pygame.image.load(os.path.dirname(__file__) + "\\pressed\\quitButtonClicked.png").convert_alpha()
             self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH-100, SCREEN_HEIGHT-100))
             self.rect = self.image.get_rect()
         else:
@@ -173,7 +171,7 @@ class QuitButton(pygame.sprite.Sprite):
 class Title(pygame.sprite.Sprite):
     def __init__(self):
         super(Title, self).__init__()
-        self.image = pygame.image.load(os.path.dirname(__file__) + "\\gameT.png").convert_alpha()
+        self.image = pygame.image.load(os.path.dirname(__file__) + "\\title\\gameT.png").convert_alpha()
         self.image.set_colorkey((255, 255, 255), RLEACCEL)
         self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH, SCREEN_HEIGHT))
         self.rect = self.image.get_rect()
@@ -185,7 +183,7 @@ class Title(pygame.sprite.Sprite):
 class UI(pygame.sprite.Sprite):
     def __init__(self):
         super(UI, self).__init__()
-        self.surf = pygame.image.load(os.path.dirname(__file__) + "\\uiBar.png").convert_alpha()
+        self.surf = pygame.image.load(os.path.dirname(__file__) + "\\ui\\uiBar.png").convert_alpha()
         self.surf = pygame.transform.scale(self.surf, (SCREEN_WIDTH+36, 600))
         self.surf.set_colorkey((255, 255, 255), RLEACCEL)
         self.rect = self.surf.get_rect()
@@ -213,7 +211,7 @@ class UI_menuButton(pygame.sprite.Sprite):
     def hover(self,x,y):
         if x > self.posX and x < self.posX + self.w1:
             if y > self.posY and y < self.posY + self.h1:
-                self.image = pygame.image.load(os.path.dirname(__file__) + "\\uiMenu.png").convert_alpha()
+                self.image = pygame.image.load(os.path.dirname(__file__) + "\\ui\\uiMenu.png").convert_alpha()
                 self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH+36, 600))
                 screen.blit(self.image, (-15, 0))
 
@@ -241,7 +239,7 @@ class UI_closeButton(pygame.sprite.Sprite):
     def hover(self,x,y):
         if x > self.posX and x < self.posX + self.w1:
             if y > self.posY and y < self.posY + self.h1:
-                self.image = pygame.image.load(os.path.dirname(__file__) + "\\uiClose.png").convert_alpha()
+                self.image = pygame.image.load(os.path.dirname(__file__) + "\\ui\\uiClose.png").convert_alpha()
                 self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH+36, 600))
                 screen.blit(self.image, (-15, 0))
 
@@ -255,14 +253,26 @@ class ClockText:
         self.current_time = time.time()
         self.s = 10
         self.m = 0
+        
+        self.vel = 1
+        self.acc = 1.06
+
         self.color = (3, 169, 244)
         self.text = self.font.render("0:10", True, self.color)
         # self.text = self.font.render(str(self.m) + ':' + str(self.s), True, (255, 255, 255))
         self.rect = self.text.get_rect()
         self.rect.center = (SCREEN_WIDTH//2, SCREEN_HEIGHT // 2 - 195)
     
+    def resetClock(self):
+        self.current_time = time.time()
+        self.s = 10
+        self.m = 0
+        self.vel = 1
+        self.acc = 1.06
+        self.text = self.font.render("0:10", True, self.color)
+
     def gameOver(self):
-        if self.s == 0:
+        if self.s <= 0:
             return True
         return False
 
@@ -272,14 +282,16 @@ class ClockText:
     def update(self):
         if time.time() - self.current_time >= 1:
             self.current_time = time.time()
-            self.s -= 1
-        self.text = self.font.render(str(self.m) + ':' + str(self.s), True, self.color)
+            self.vel = -(self.vel * (-self.acc))
+            self.s = self.s - self.vel
+            print(self.vel)
+        # self.text = self.font.render(str(int(self.m)) + ':' + str(self.s), True, self.color)
 
     def render(self):
         if self.s < 10:
-            self.text = self.font.render(str(self.m) + ':0' + str(self.s), True, self.color)
+            self.text = self.font.render(str(self.m) + ':0' + str(int(self.s)), True, self.color)
         else:
-            self.text = self.font.render(str(self.m) + ':' + str(self.s), True, self.color)
+            self.text = self.font.render(str(self.m) + ':' + str(int(self.s)), True, self.color)
         screen.blit(self.text, self.rect)
 
 # fruit object
@@ -374,47 +386,61 @@ class Score:
         self.text = self.font.render("0", True, self.color)
         self.counter = 0
         self.scr = 0
+
         self.rect = self.text.get_rect()
         self.rect.center = (SCREEN_WIDTH//2 - 138, SCREEN_HEIGHT // 2 - 195)
     
-    def getScore(self):
-        return str(self.scr)
+    def resetScore(self):
+        self.scr = 0
+        self.counter = 0
+
+    def displayScore(self):
+        self.font = pygame.font.Font(os.path.dirname(__file__) + "\\Quinquefive.ttf", 40)
+        self.text = self.font.render(str(self.scr), True, self.color)
+        self.rect = self.text.get_rect()
+        self.rect.center = (SCREEN_WIDTH/2 + 80, SCREEN_HEIGHT /2 + 9)
+        screen.blit(self.text, self.rect)
+
     def update(self):
         if self.counter == 5:
             self.counter = 0
         else:
             self.counter += 1
-            self.scr += 1
+        self.scr += 1
+    
     def render(self):
         if self.scr < 10:
             self.font = pygame.font.Font(os.path.dirname(__file__) + "\\Quinquefive.ttf", 32)
             self.rect = self.text.get_rect()
             self.rect.center = (SCREEN_WIDTH//2 - 121, SCREEN_HEIGHT // 2 - 195)
             self.text = self.font.render(str(self.scr), True, self.color)
-        else:
+        if self.scr >= 10 and self.scr < 100:
             self.font = pygame.font.Font(os.path.dirname(__file__) + "\\Quinquefive.ttf", 22)
+            self.rect = self.text.get_rect()
+            self.rect.center = (SCREEN_WIDTH//2 - 126, SCREEN_HEIGHT // 2 - 195)
+            self.text = self.font.render(str(self.scr), True, self.color)
+        if self.scr >= 100:
+            self.font = pygame.font.Font(os.path.dirname(__file__) + "\\Quinquefive.ttf", 16)
             self.rect = self.text.get_rect()
             self.rect.center = (SCREEN_WIDTH//2 - 126, SCREEN_HEIGHT // 2 - 195)
             self.text = self.font.render(str(self.scr), True, self.color)
         screen.blit(self.text, self.rect)
 
 class Menu(pygame.sprite.Sprite):
-    def __init__(self, pause_or_gameover, score):
+    def __init__(self, pause_or_gameover):
         super(Menu, self).__init__()
         if pause_or_gameover == "pause":
-            self.text = pygame.image.load(os.path.dirname(__file__) + "\\pausedText.png").convert_alpha()
+            self.text = pygame.image.load(os.path.dirname(__file__) + "\\menu\\pausedText.png").convert_alpha()
             self.text_rect = self.text.get_rect()
         elif pause_or_gameover == "gameover":
-            self.text = pygame.image.load(os.path.dirname(__file__) + "\\gameOver.png").convert_alpha()
+            self.text = pygame.image.load(os.path.dirname(__file__) + "\\menu\\gameOver.png").convert_alpha()
             self.text_rect = self.text.get_rect()
         
-        self.score = score
-
-        self.scoreScreen = pygame.image.load(os.path.dirname(__file__) + "\\scoreScreen.png").convert_alpha()
+        self.scoreScreen = pygame.image.load(os.path.dirname(__file__) + "\\menu\\scoreScreen.png").convert_alpha()
         self.scoreScreen_rect = self.scoreScreen.get_rect()
-        self.retryButton = pygame.image.load(os.path.dirname(__file__) + "\\retryButton.png").convert_alpha()
+        self.retryButton = pygame.image.load(os.path.dirname(__file__) + "\\menu\\retryButton.png").convert_alpha()
         self.retryButton_rect = self.retryButton.get_rect()
-        self.quitButton = pygame.image.load(os.path.dirname(__file__) + "\\exitButton.png").convert_alpha()
+        self.quitButton = pygame.image.load(os.path.dirname(__file__) + "\\menu\\exitButton.png").convert_alpha()
         self.quitButton_rect = self.quitButton.get_rect()
 
         self.quitX = SCREEN_WIDTH / 2 - 45
@@ -437,10 +463,10 @@ class Menu(pygame.sprite.Sprite):
     def quitHover(self,x,y):
         if self.quitX < x <  self.quitX + self.quit_w:
             if self.quitY < y < self.quitY + self.quit_h:
-                self.quitButton = pygame.image.load(os.path.dirname(__file__) + "\\exitButtonHover.png").convert_alpha()
+                self.quitButton = pygame.image.load(os.path.dirname(__file__) + "\\menu\\exitButtonHover.png").convert_alpha()
                 self.quitButton_rect = self.quitButton.get_rect()
         else:
-            self.quitButton = pygame.image.load(os.path.dirname(__file__) + "\\exitButton.png").convert_alpha()
+            self.quitButton = pygame.image.load(os.path.dirname(__file__) + "\\menu\\exitButton.png").convert_alpha()
             self.quitButton_rect = self.quitButton.get_rect()
     
     def quitClicked(self,x,y):
@@ -452,10 +478,10 @@ class Menu(pygame.sprite.Sprite):
     def retryHover(self,x,y):
         if self.retryX < x < self.retryX + self.retry_w:
             if self.retryY < y < self.retryY + self.retry_h:
-                self.retryButton = pygame.image.load(os.path.dirname(__file__) + "\\retryButtonHover.png").convert_alpha()
+                self.retryButton = pygame.image.load(os.path.dirname(__file__) + "\\menu\\retryButtonHover.png").convert_alpha()
                 self.retryButton_rect = self.retryButton.get_rect()
         else:
-            self.retryButton = pygame.image.load(os.path.dirname(__file__) + "\\retryButton.png").convert_alpha()
+            self.retryButton = pygame.image.load(os.path.dirname(__file__) + "\\menu\\retryButton.png").convert_alpha()
             self.retryButton_rect = self.retryButton.get_rect()
 
     def retryClicked(self,x,y):
@@ -563,10 +589,7 @@ while running2:
                         pygame.quit()
                         sys.exit()
                 if uim.is_clicked(x,y):
-                    men = Menu("pause", sc.getScore())
-                    berries.empty()
-                    event_time = 3000
-                    pygame.time.set_timer(ADDBERRY, event_time)
+                    men = Menu("pause")
                     running = False
                 for fruit in berries:
                     fruit.is_clicked(x,y)                        
@@ -618,11 +641,14 @@ while running2:
                 pygame.quit()
                 sys.exit()
             if men.retryClicked(x,y):
+                berries.empty()
                 fr = Fruit(100, SCREEN_HEIGHT / 2 - 100 / 2, SCREEN_WIDTH / 2 - 100 / 2)
                 berries.add(fr)
                 ADDBERRY = pygame.USEREVENT + 1
                 event_time = 3000
                 pygame.time.set_timer(ADDBERRY, event_time)
+                cl.resetClock()
+                sc.resetScore()
                 running = True
 
         bg.update()
@@ -630,6 +656,7 @@ while running2:
         men.quitHover(x,y)
         men.retryHover(x,y)
         men.render()
+        sc.displayScore()
 
         pygame.display.update()
         clock.tick(FPS)
