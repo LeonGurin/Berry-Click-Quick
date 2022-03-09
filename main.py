@@ -1,16 +1,13 @@
-from decimal import ROUND_CEILING
 import pygame
 import random
 import os
 import sys
 import time
-
 from pygame.locals import (
     QUIT,
     MOUSEBUTTONDOWN,    
     RLEACCEL,
 )
-
 # fixed python 32-bit bug ✔
 # add start screen ✔
 # fix berry bug ✔
@@ -38,7 +35,7 @@ berries = pygame.sprite.Group()
 class Background(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.image.load(os.path.dirname(__file__) + "\\background\\backgroundClouds.png").convert()
+        self.image = pygame.image.load(os.path.dirname(__file__) + '\\background\\backgroundClouds.png').convert()
         self.image = pygame.transform.scale(self.image, (SCREEN_WIDTH, SCREEN_HEIGHT))
         self.rect = self.image.get_rect()
         self.x = 0
@@ -286,7 +283,7 @@ class ClockText:
             self.current_time = time.time()
             self.vel = -(self.vel * (-self.acc))
             self.s = self.s - self.vel
-            print(self.s)
+            #print(self.s)
             self.s = round(self.s)
         # self.text = self.font.render(str(int(self.m)) + ':' + str(self.s), True, self.color)
 
@@ -670,3 +667,5 @@ while running2:
 
         pygame.display.update()
         clock.tick(FPS)
+
+
